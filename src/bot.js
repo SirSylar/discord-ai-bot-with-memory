@@ -5,12 +5,14 @@ import {
 	MessageType,
 	Partials,
 	REST,
-	Routes
+	Routes,
+    ActivityType // <--- <--- UPDATED 07 12 2025
 } from "discord.js";
 import { Logger, LogLevel } from "meklog";
 import dotenv from "dotenv";
 import axios from "axios";
 import commands from "./commands/commands.js";
+import fs from "fs"; // <--- <--- UPDATED 07 12 2025
 
 dotenv.config();
 
@@ -152,15 +154,46 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 client.once(Events.ClientReady, async () => {
 	await client.guilds.fetch();
-	client.user.setPresence({ activities: [], status: "online" });
+
+    // <--- UPDATED 07 12 2025
+	client.user.setPresence({
+		activities: [{
+			name: "twitch", //<--- UPDATED 07 12 2025 add a game name between the quotes then restart your bot
+			type: ActivityType.watching //<--- UPDATED 07 12 2025 playing can be changed to playing
+		}],
+		status: "dnd" //<--- UPDATED 07 12 2025 dnd = do not disturb, change to "online" if you wish the bot to have online green status. dnd mode has no impact on the bot or any of its abilities.
+	});
+
 	await rest.put(Routes.applicationCommands(client.user.id), {
 		body: commands
 	});
-
-	log(LogLevel.Info, "Successfully reloaded application slash (/) commands.");
+    
+    log(LogLevel.Info, "Successfully reloaded application slash (/) commands.");
 });
 
+// --- MEMORY SYSTEM START ---
+const MEMORY_FILE = "./memory.json";
 const messages = {};
+
+// Function to load memory on startup
+if (fs.existsSync(MEMORY_FILE)) {
+    try {
+        const data = fs.readFileSync(MEMORY_FILE, "utf8");
+        const loadedMessages = JSON.parse(data);
+        Object.assign(messages, loadedMessages);
+        console.log("Memory loaded successfully.");
+    } catch (err) {
+        console.error("Failed to load memory file:", err);
+    }
+}
+
+// Function to save memory
+function saveMemory() {
+    fs.writeFile(MEMORY_FILE, JSON.stringify(messages, null, 2), (err) => {
+        if (err) console.error("Failed to save memory:", err);
+    });
+}
+// --- MEMORY SYSTEM END ---
 
 // split text so it fits in a Discord message
 function splitText(str, length) {
@@ -327,6 +360,7 @@ client.on(Events.MessageCreate, async message => {
 
 						// clear
 						delete messages[channelID];
+						saveMemory(); // <--- UPDATED 07 12 2025
 
 						if (cleared > 0) {
 							await message.reply({ content: `Cleared conversation of ${cleared} messages` });
@@ -502,6 +536,9 @@ client.on(Events.MessageCreate, async message => {
 		}
 		messages[channelID].last = context;
 		++messages[channelID].amount;
+		
+	saveMemory(); // <--- UPDATED 07 12 2025
+	
 	} catch (error) {
 		if (typing) {
 			try {
