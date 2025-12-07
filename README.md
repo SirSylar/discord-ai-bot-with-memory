@@ -39,6 +39,8 @@ The project started thanks to [mekb](https://github.com/mekb-turtle).
 11. Install <a href="https://github.com/AUTOMATIC1111/stable-diffusion-webui">Stable Diffusion</a>
 12. Run the script `./webui.sh --api --listen`
 
+13. (UPDATE) I have added the function for the bot to be able to retain memory after being restarted or crash. Also Implimented "Activity status" so you can set a custom activity status on the bots profile. [WARNING] Users who use this version of the bot should tell their discord members to not share any sensitive data at all because the memory function of the bot can be exploited by users to leak information a user has told the bot. I'm going to figure out a way to fix this, If at all possible
+
 ### Set-up instructions with Docker
 
 1. Install [Docker](https://docs.docker.com/get-docker/)
